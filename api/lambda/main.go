@@ -6,6 +6,7 @@ import (
 	"github.com/aws/aws-lambda-go/lambda"
 	logger "github.com/hthl85/aws-lambda-logger"
 	"github.com/hthl85/aws-yahoo-price-scraper/config"
+	"github.com/hthl85/aws-yahoo-price-scraper/consts"
 	"github.com/hthl85/aws-yahoo-price-scraper/infrastructure/repositories/repos"
 	"github.com/hthl85/aws-yahoo-price-scraper/infrastructure/scraper"
 	"github.com/hthl85/aws-yahoo-price-scraper/usecase/price"
@@ -33,7 +34,7 @@ func main() {
 
 	// create new scraper jobs
 	jobs := scraper.NewPriceScraper(fs, zap)
-	jobs.StartJobsByPaging(10)
+	jobs.StartJobsByPaging(consts.PAGE_SIZE)
 	defer jobs.Close()
 
 	lambda.Start(lambdaHandler)

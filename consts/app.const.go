@@ -6,3 +6,5 @@ const (
 	PRICE_COL       = "price"
 	CHECK_POINT_COL = "checkpoint"
 )
+
+const PAGE_SIZE = 25
