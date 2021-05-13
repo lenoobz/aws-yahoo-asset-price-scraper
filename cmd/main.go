@@ -5,6 +5,7 @@ import (
 
 	logger "github.com/hthl85/aws-lambda-logger"
 	"github.com/hthl85/aws-yahoo-price-scraper/config"
+	"github.com/hthl85/aws-yahoo-price-scraper/consts"
 	"github.com/hthl85/aws-yahoo-price-scraper/infrastructure/repositories/repos"
 	"github.com/hthl85/aws-yahoo-price-scraper/infrastructure/scraper"
 	"github.com/hthl85/aws-yahoo-price-scraper/usecase/price"
@@ -31,6 +32,7 @@ func main() {
 	ps := price.NewService(repo, zap)
 
 	ts := scraper.NewPriceScraper(ps, zap)
-	ts.StartJobsByPaging(10)
+	// ts.ScrapeAllAssetsPrice()
+	ts.ScrapeAssetsPriceFromCheckpoint(consts.PAGE_SIZE)
 	defer ts.Close()
 }

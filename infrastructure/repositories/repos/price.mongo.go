@@ -24,11 +24,11 @@ type PriceMongo struct {
 }
 
 // NewPriceMongo creates new price mongo repo
-func NewPriceMongo(db *mongo.Database, l logger.ContextLog, conf *config.MongoConfig) (*PriceMongo, error) {
+func NewPriceMongo(db *mongo.Database, log logger.ContextLog, conf *config.MongoConfig) (*PriceMongo, error) {
 	if db != nil {
 		return &PriceMongo{
 			db:   db,
-			log:  l,
+			log:  log,
 			conf: conf,
 		}, nil
 	}
@@ -68,7 +68,7 @@ func NewPriceMongo(db *mongo.Database, l logger.ContextLog, conf *config.MongoCo
 	return &PriceMongo{
 		db:     client.Database(conf.Dbname),
 		client: client,
-		log:    l,
+		log:    log,
 		conf:   conf,
 	}, nil
 }
@@ -91,106 +91,14 @@ func (r *PriceMongo) Close() {
 // Implement interface
 ///////////////////////////////////////////////////////////////////////////////
 
-// FindOneAndUpdateCheckPoint find a check point and update it value
-func (r *PriceMongo) FindOneAndUpdateCheckPoint(ctx context.Context, pageSize int64, numSecurities int64) (*entities.CheckPoint, error) {
+// CountAssets count number of assets available
+func (r *PriceMongo) CountAssets(ctx context.Context) (int64, error) {
 	// create new context for the query
 	ctx, cancel := createContext(ctx, r.conf.TimeoutMS)
 	defer cancel()
 
 	// what collection we are going to use
-	colname, ok := r.conf.Colnames[consts.CHECK_POINT_COL]
-	if !ok {
-		r.log.Error(ctx, "cannot find collection name")
-		return nil, fmt.Errorf("cannot find collection name")
-	}
-	col := r.db.Collection(colname)
-
-	// filter
-	filter := bson.D{}
-
-	// find options
-	findOptions := options.FindOne()
-
-	// decode cursor to activity model
-	var cp models.CheckPointModel
-	cp.PageSize = pageSize
-
-	cur := col.FindOne(ctx, filter, findOptions)
-
-	// only run defer function when find success
-	err := cur.Err()
-
-	if err == mongo.ErrNoDocuments {
-		cp.PrevIndex = 0
-		return r.updateCheckPoint(ctx, col, &cp)
-	}
-
-	// find was not succeed
-	if err != nil {
-		r.log.Error(ctx, "find query failed", "error", err)
-		return nil, err
-	}
-
-	if err = cur.Decode(&cp); err != nil {
-		r.log.Error(ctx, "decode failed", "error", err)
-		return nil, err
-	}
-
-	if cp.PrevIndex*cp.PageSize+cp.PageSize >= numSecurities {
-		cp.PrevIndex = 0
-	} else {
-		cp.PrevIndex = cp.PrevIndex + 1
-	}
-
-	return r.updateCheckPoint(ctx, col, &cp)
-}
-
-func (r *PriceMongo) updateCheckPoint(ctx context.Context, col *mongo.Collection, m *models.CheckPointModel) (*entities.CheckPoint, error) {
-
-	m.IsActive = true
-	m.Schema = r.conf.SchemaVersion
-	m.ModifiedAt = time.Now().UTC().Unix()
-
-	// filter
-	filter := bson.D{}
-	if m.ID != nil {
-		filter = bson.D{{Key: "_id", Value: m.ID}}
-	} else {
-		m.CreatedAt = time.Now().UTC().Unix()
-	}
-
-	// update
-	update := bson.D{
-		{
-			Key:   "$set",
-			Value: m,
-		},
-	}
-
-	opts := options.Update().SetUpsert(true)
-
-	_, err := col.UpdateOne(ctx, filter, update, opts)
-	if err != nil {
-		r.log.Error(ctx, "update one failed", "error", err)
-		return nil, err
-	}
-
-	cp := entities.CheckPoint{
-		PageSize:  m.PageSize,
-		PageIndex: m.PrevIndex,
-	}
-
-	return &cp, nil
-}
-
-// CountSecurites count number of securities available
-func (r *PriceMongo) CountSecurites(ctx context.Context) (int64, error) {
-	// create new context for the query
-	ctx, cancel := createContext(ctx, r.conf.TimeoutMS)
-	defer cancel()
-
-	// what collection we are going to use
-	colname, ok := r.conf.Colnames[consts.SECURITIES_COL]
+	colname, ok := r.conf.Colnames[consts.ASSETS_COL]
 	if !ok {
 		r.log.Error(ctx, "cannot find collection name")
 		return 0, fmt.Errorf("cannot find collection name")
@@ -206,14 +114,14 @@ func (r *PriceMongo) CountSecurites(ctx context.Context) (int64, error) {
 	return col.CountDocuments(ctx, filter, countOptions)
 }
 
-// FindSecurities gets all securities
-func (r *PriceMongo) FindSecurities(ctx context.Context) ([]*entities.Security, error) {
+// FindAllAssets find all assets
+func (r *PriceMongo) FindAllAssets(ctx context.Context) ([]*entities.Asset, error) {
 	// create new context for the query
 	ctx, cancel := createContext(ctx, r.conf.TimeoutMS)
 	defer cancel()
 
 	// what collection we are going to use
-	colname, ok := r.conf.Colnames[consts.SECURITIES_COL]
+	colname, ok := r.conf.Colnames[consts.ASSETS_COL]
 	if !ok {
 		r.log.Error(ctx, "cannot find collection name")
 		return nil, fmt.Errorf("cannot find collection name")
@@ -243,18 +151,18 @@ func (r *PriceMongo) FindSecurities(ctx context.Context) ([]*entities.Security, 
 		return nil, err
 	}
 
-	var securities []*entities.Security
+	var assets []*entities.Asset
 
 	// iterate over the cursor to decode document one at a time
 	for cur.Next(ctx) {
 		// decode cursor to activity model
-		var security entities.Security
-		if err = cur.Decode(&security); err != nil {
+		var asset entities.Asset
+		if err = cur.Decode(&asset); err != nil {
 			r.log.Error(ctx, "decode failed", "error", err)
 			return nil, err
 		}
 
-		securities = append(securities, &security)
+		assets = append(assets, &asset)
 	}
 
 	if err := cur.Err(); err != nil {
@@ -262,17 +170,17 @@ func (r *PriceMongo) FindSecurities(ctx context.Context) ([]*entities.Security, 
 		return nil, err
 	}
 
-	return securities, nil
+	return assets, nil
 }
 
-// FindSecuritiesPaging gets all securities by paging
-func (r *PriceMongo) FindSecuritiesPaging(ctx context.Context, e *entities.CheckPoint) ([]*entities.Security, error) {
+// FindAssetsFromCheckpoint find assets from checkpoint
+func (r *PriceMongo) FindAssetsFromCheckpoint(ctx context.Context, checkpoint *entities.Checkpoint) ([]*entities.Asset, error) {
 	// create new context for the query
 	ctx, cancel := createContext(ctx, r.conf.TimeoutMS)
 	defer cancel()
 
 	// what collection we are going to use
-	colname, ok := r.conf.Colnames[consts.SECURITIES_COL]
+	colname, ok := r.conf.Colnames[consts.ASSETS_COL]
 	if !ok {
 		r.log.Error(ctx, "cannot find collection name")
 		return nil, fmt.Errorf("cannot find collection name")
@@ -283,7 +191,7 @@ func (r *PriceMongo) FindSecuritiesPaging(ctx context.Context, e *entities.Check
 	filter := bson.D{}
 
 	// find options
-	findOptions := options.Find().SetSort(bson.D{{Key: "_id", Value: -1}}).SetSkip(e.PageIndex * e.PageSize).SetLimit(e.PageSize)
+	findOptions := options.Find().SetSort(bson.D{{Key: "_id", Value: -1}}).SetSkip(checkpoint.PageIndex * checkpoint.PageSize).SetLimit(checkpoint.PageSize)
 
 	cur, err := col.Find(ctx, filter, findOptions)
 
@@ -302,18 +210,18 @@ func (r *PriceMongo) FindSecuritiesPaging(ctx context.Context, e *entities.Check
 		return nil, err
 	}
 
-	var securities []*entities.Security
+	var assets []*entities.Asset
 
 	// iterate over the cursor to decode document one at a time
 	for cur.Next(ctx) {
 		// decode cursor to activity model
-		var security entities.Security
-		if err = cur.Decode(&security); err != nil {
+		var asset entities.Asset
+		if err = cur.Decode(&asset); err != nil {
 			r.log.Error(ctx, "decode failed", "error", err)
 			return nil, err
 		}
 
-		securities = append(securities, &security)
+		assets = append(assets, &asset)
 	}
 
 	if err := cur.Err(); err != nil {
@@ -321,42 +229,96 @@ func (r *PriceMongo) FindSecuritiesPaging(ctx context.Context, e *entities.Check
 		return nil, err
 	}
 
-	return securities, nil
+	return assets, nil
 }
 
-// InsertPrice insert price
-func (r *PriceMongo) InsertPrice(ctx context.Context, e *entities.Price) error {
+// UpdateCheckpoint updates a checkpoint given page size and number of asset
+func (r *PriceMongo) UpdateCheckpoint(ctx context.Context, pageSize int64, numAssets int64) (*entities.Checkpoint, error) {
 	// create new context for the query
 	ctx, cancel := createContext(ctx, r.conf.TimeoutMS)
 	defer cancel()
 
-	m, err := models.NewPriceModel(e)
+	// what collection we are going to use
+	colname, ok := r.conf.Colnames[consts.CHECKPOINT_COL]
+	if !ok {
+		r.log.Error(ctx, "cannot find collection name")
+		return nil, fmt.Errorf("cannot find collection name")
+	}
+	col := r.db.Collection(colname)
+
+	// filter
+	filter := bson.D{}
+
+	// find options
+	findOptions := options.FindOne()
+
+	// decode cursor to activity model
+	var checkpoint models.CheckPointModel
+	checkpoint.PageSize = pageSize
+
+	cur := col.FindOne(ctx, filter, findOptions)
+
+	// only run defer function when find success
+	err := cur.Err()
+
+	if err == mongo.ErrNoDocuments {
+		checkpoint.PrevIndex = 0
+		return r.updateCheckPoint(ctx, col, &checkpoint)
+	}
+
+	// find was not succeed
+	if err != nil {
+		r.log.Error(ctx, "find query failed", "error", err)
+		return nil, err
+	}
+
+	if err = cur.Decode(&checkpoint); err != nil {
+		r.log.Error(ctx, "decode failed", "error", err)
+		return nil, err
+	}
+
+	if checkpoint.PrevIndex*checkpoint.PageSize+checkpoint.PageSize >= numAssets {
+		checkpoint.PrevIndex = 0
+	} else {
+		checkpoint.PrevIndex = checkpoint.PrevIndex + 1
+	}
+
+	return r.updateCheckPoint(ctx, col, &checkpoint)
+}
+
+// InsertAssetPrice insert asset price
+func (r *PriceMongo) InsertAssetPrice(ctx context.Context, assetPrice *entities.Price) error {
+	// create new context for the query
+	ctx, cancel := createContext(ctx, r.conf.TimeoutMS)
+	defer cancel()
+
+	priceModel, err := models.NewPriceModel(assetPrice)
 	if err != nil {
 		r.log.Error(ctx, "create model failed", "error", err)
 		return err
 	}
 
 	// what collection we are going to use
-	colname, ok := r.conf.Colnames[consts.PRICE_COL]
+	colname, ok := r.conf.Colnames[consts.PRICES_COL]
 	if !ok {
 		r.log.Error(ctx, "cannot find collection name")
 		return fmt.Errorf("cannot find collection name")
 	}
 	col := r.db.Collection(colname)
 
-	m.IsActive = true
-	m.Schema = r.conf.SchemaVersion
-	m.ModifiedAt = time.Now().UTC().Unix()
+	priceModel.IsActive = true
+	priceModel.Schema = r.conf.SchemaVersion
+	priceModel.ModifiedAt = time.Now().UTC().Unix()
 
 	filter := bson.D{{
 		Key:   "ticker",
-		Value: m.Ticker,
+		Value: priceModel.Ticker,
 	}}
 
 	update := bson.D{
 		{
 			Key:   "$set",
-			Value: m,
+			Value: priceModel,
 		},
 		{
 			Key: "$setOnInsert",
@@ -383,7 +345,42 @@ func (r *PriceMongo) InsertPrice(ctx context.Context, e *entities.Price) error {
 ///////////////////////////////////////////////////////////
 
 // createContext create a new context with timeout
-func createContext(ctx context.Context, t uint64) (context.Context, context.CancelFunc) {
-	timeout := time.Duration(t) * time.Millisecond
-	return context.WithTimeout(ctx, timeout*time.Millisecond)
+func createContext(ctx context.Context, timeout uint64) (context.Context, context.CancelFunc) {
+	return context.WithTimeout(ctx, time.Duration(timeout)*time.Millisecond)
+}
+
+// updateCheckPoint update checkpoint
+func (r *PriceMongo) updateCheckPoint(ctx context.Context, col *mongo.Collection, checkpoint *models.CheckPointModel) (*entities.Checkpoint, error) {
+	checkpoint.IsActive = true
+	checkpoint.Schema = r.conf.SchemaVersion
+	checkpoint.ModifiedAt = time.Now().UTC().Unix()
+
+	// filter
+	filter := bson.D{}
+	if checkpoint.ID != nil {
+		filter = bson.D{{Key: "_id", Value: checkpoint.ID}}
+	} else {
+		checkpoint.CreatedAt = time.Now().UTC().Unix()
+	}
+
+	// update
+	update := bson.D{
+		{
+			Key:   "$set",
+			Value: checkpoint,
+		},
+	}
+
+	opts := options.Update().SetUpsert(true)
+
+	_, err := col.UpdateOne(ctx, filter, update, opts)
+	if err != nil {
+		r.log.Error(ctx, "update one failed", "error", err)
+		return nil, err
+	}
+
+	return &entities.Checkpoint{
+		PageSize:  checkpoint.PageSize,
+		PageIndex: checkpoint.PrevIndex,
+	}, nil
 }

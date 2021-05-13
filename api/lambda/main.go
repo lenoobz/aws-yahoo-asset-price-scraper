@@ -34,7 +34,7 @@ func main() {
 
 	// create new scraper jobs
 	jobs := scraper.NewPriceScraper(fs, zap)
-	jobs.StartJobsByPaging(consts.PAGE_SIZE)
+	jobs.ScrapeAssetsPriceFromCheckpoint(consts.PAGE_SIZE)
 	defer jobs.Close()
 
 	lambda.Start(lambdaHandler)

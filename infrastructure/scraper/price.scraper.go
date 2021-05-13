@@ -18,20 +18,20 @@ import (
 
 // PriceScraper struct
 type PriceScraper struct {
-	StockJob     *colly.Collector
-	priceService *price.Service
-	errorTickers []string
-	log          logger.ContextLog
+	ScrapePriceJob *colly.Collector
+	priceService   *price.Service
+	log            logger.ContextLog
+	errorTickers   []string
 }
 
 // NewPriceScraper create new price scraper
-func NewPriceScraper(ps *price.Service, l logger.ContextLog) *PriceScraper {
-	sj := newScraperJob()
+func NewPriceScraper(priceService *price.Service, log logger.ContextLog) *PriceScraper {
+	scraperJob := newScraperJob()
 
 	return &PriceScraper{
-		StockJob:     sj,
-		priceService: ps,
-		log:          l,
+		ScrapePriceJob: scraperJob,
+		priceService:   priceService,
+		log:            log,
 	}
 }
 
@@ -61,65 +61,63 @@ func newScraperJob() *colly.Collector {
 
 // configJobs configs on error handler and on response handler for scaper jobs
 func (s *PriceScraper) configJobs() {
-	s.StockJob.OnError(s.errorHandler)
-	s.StockJob.OnScraped(s.scrapedHandler)
-	s.StockJob.OnHTML("div[id=quote-header-info]", s.processPriceResponse)
+	s.ScrapePriceJob.OnError(s.errorHandler)
+	s.ScrapePriceJob.OnScraped(s.scrapedHandler)
+	s.ScrapePriceJob.OnHTML("div[id=quote-header-info]", s.processPriceResponse)
 }
 
-// StartJobs start job
-func (s *PriceScraper) StartJobs() {
+// ScrapeAllAssetsPrice scrape all assets price
+func (s *PriceScraper) ScrapeAllAssetsPrice() {
 	ctx := context.Background()
 
 	s.configJobs()
 
-	securities, err := s.priceService.GetSecurities(ctx)
+	assets, err := s.priceService.GetAllAssets(ctx)
 	if err != nil {
-		s.log.Error(ctx, "get securities list failed", "error", err)
+		s.log.Error(ctx, "get assets list failed", "error", err)
 	}
 
-	for _, security := range securities {
+	for _, asset := range assets {
 		reqContext := colly.NewContext()
-		reqContext.Put("ticker", security.Ticker)
-		reqContext.Put("currency", security.Currency)
+		reqContext.Put("ticker", asset.Ticker)
+		reqContext.Put("currency", asset.Currency)
 
-		url := config.GetPriceByTickerURL(security.Ticker)
+		url := config.GetPriceByTickerURL(asset.Ticker)
 
-		s.log.Info(ctx, "scraping price security", "ticker", security.Ticker)
-
-		if err := s.StockJob.Request("GET", url, nil, reqContext, nil); err != nil {
-			s.log.Error(ctx, "scrape price security failed", "error", err, "ticker", security.Ticker)
+		s.log.Info(ctx, "scraping asset price", "ticker", asset.Ticker)
+		if err := s.ScrapePriceJob.Request("GET", url, nil, reqContext, nil); err != nil {
+			s.log.Error(ctx, "scraping asset price", "error", err, "ticker", asset.Ticker)
 		}
 	}
 
-	s.StockJob.Wait()
+	s.ScrapePriceJob.Wait()
 }
 
-// StartJob start job
-func (s *PriceScraper) StartJobsByPaging(pageSize int64) {
+// ScrapeAssetsPriceFromCheckpoint scrape all assets price from checkpoint
+func (s *PriceScraper) ScrapeAssetsPriceFromCheckpoint(pageSize int64) {
 	ctx := context.Background()
 
 	s.configJobs()
 
-	securities, err := s.priceService.GetSecuritiesPaging(ctx, pageSize)
+	assets, err := s.priceService.GetAssetsFromCheckpoint(ctx, pageSize)
 	if err != nil {
-		s.log.Error(ctx, "get securities list failed", "error", err)
+		s.log.Error(ctx, "get assets list failed", "error", err)
 	}
 
-	for _, security := range securities {
+	for _, asset := range assets {
 		reqContext := colly.NewContext()
-		reqContext.Put("ticker", security.Ticker)
-		reqContext.Put("currency", security.Currency)
+		reqContext.Put("ticker", asset.Ticker)
+		reqContext.Put("currency", asset.Currency)
 
-		url := config.GetPriceByTickerURL(security.Ticker)
+		url := config.GetPriceByTickerURL(asset.Ticker)
 
-		s.log.Info(ctx, "scraping price security", "ticker", security.Ticker)
-
-		if err := s.StockJob.Request("GET", url, nil, reqContext, nil); err != nil {
-			s.log.Error(ctx, "scrape price security failed", "error", err, "ticker", security.Ticker)
+		s.log.Info(ctx, "scraping asset price", "ticker", asset.Ticker)
+		if err := s.ScrapePriceJob.Request("GET", url, nil, reqContext, nil); err != nil {
+			s.log.Error(ctx, "scraping asset price failed", "error", err, "ticker", asset.Ticker)
 		}
 	}
 
-	s.StockJob.Wait()
+	s.ScrapePriceJob.Wait()
 }
 
 ///////////////////////////////////////////////////////////
@@ -139,7 +137,6 @@ func (s *PriceScraper) scrapedHandler(r *colly.Response) {
 	if foundPrice == "" {
 		s.log.Error(ctx, "price not found", "ticker", r.Request.Ctx.Get("ticker"))
 		s.errorTickers = append(s.errorTickers, r.Request.Ctx.Get("ticker"))
-		return
 	}
 }
 
@@ -154,7 +151,7 @@ func (s *PriceScraper) processPriceResponse(e *colly.HTMLElement) {
 
 	foundPrice := false
 
-	stock := entities.Price{
+	assetPrice := entities.Price{
 		Ticker:   ticker,
 		Currency: currency,
 	}
@@ -169,7 +166,7 @@ func (s *PriceScraper) processPriceResponse(e *colly.HTMLElement) {
 				return
 			}
 
-			stock.Price = val
+			assetPrice.Price = val
 			foundPrice = true
 		}
 	})
@@ -177,7 +174,7 @@ func (s *PriceScraper) processPriceResponse(e *colly.HTMLElement) {
 	if foundPrice {
 		e.Response.Ctx.Put("foundPrice", "true")
 
-		if err := s.priceService.AddPrice(ctx, &stock); err != nil {
+		if err := s.priceService.AddAssetPrice(ctx, &assetPrice); err != nil {
 			s.log.Error(ctx, "add price failed", "error", err, "ticker", ticker)
 		}
 	}

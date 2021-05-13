@@ -12,15 +12,15 @@ import (
 
 // Reader interface
 type Reader interface {
-	CountSecurites(context.Context) (int64, error)
-	FindSecurities(context.Context) ([]*entities.Security, error)
-	FindSecuritiesPaging(context.Context, *entities.CheckPoint) ([]*entities.Security, error)
+	CountAssets(ctx context.Context) (int64, error)
+	FindAllAssets(ctx context.Context) ([]*entities.Asset, error)
+	FindAssetsFromCheckpoint(ctx context.Context, checkpoint *entities.Checkpoint) ([]*entities.Asset, error)
 }
 
 // Writer interface
 type Writer interface {
-	InsertPrice(context.Context, *entities.Price) error
-	FindOneAndUpdateCheckPoint(ctx context.Context, pageSize int64, numSecurities int64) (*entities.CheckPoint, error)
+	InsertAssetPrice(ctx context.Context, assetPrice *entities.Price) error
+	UpdateCheckpoint(ctx context.Context, pageSize int64, numAssets int64) (*entities.Checkpoint, error)
 }
 
 // Repo interface

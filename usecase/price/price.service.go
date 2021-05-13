@@ -21,35 +21,35 @@ func NewService(r Repo, l logger.ContextLog) *Service {
 	}
 }
 
-// GetSecurities gets all securities
-func (s *Service) GetSecurities(ctx context.Context) ([]*entities.Security, error) {
-	s.log.Info(ctx, "get securities")
-	return s.repo.FindSecurities(ctx)
+// GetAllAssets gets all assets
+func (s *Service) GetAllAssets(ctx context.Context) ([]*entities.Asset, error) {
+	s.log.Info(ctx, "get all assets")
+	return s.repo.FindAllAssets(ctx)
 }
 
-// GetSecuritiesPaging gets all securities by paging
-func (s *Service) GetSecuritiesPaging(ctx context.Context, pageSize int64) ([]*entities.Security, error) {
-	s.log.Info(ctx, "get securities by tickers")
-	numSecurities, err := s.repo.CountSecurites(ctx)
+// GetAssetsFromCheckpoint gets all assets from checkpoint
+func (s *Service) GetAssetsFromCheckpoint(ctx context.Context, pageSize int64) ([]*entities.Asset, error) {
+	s.log.Info(ctx, "get assets from checkpoint")
+	numAssets, err := s.repo.CountAssets(ctx)
 	if err != nil {
-		s.log.Error(ctx, "count sercurities failed", "error", err)
+		s.log.Error(ctx, "count assets failed", "error", err)
 	}
 
-	cp, err := s.repo.FindOneAndUpdateCheckPoint(ctx, pageSize, numSecurities)
+	checkpoint, err := s.repo.UpdateCheckpoint(ctx, pageSize, numAssets)
 	if err != nil {
 		s.log.Error(ctx, "find and update checkpoint failed", "error", err)
 	}
 
-	if cp == nil {
-		s.log.Error(ctx, "checkpoint is nil", "checkpoint", cp)
+	if checkpoint == nil {
+		s.log.Error(ctx, "checkpoint is nil", "checkpoint", checkpoint)
 		return nil, nil
 	}
 
-	return s.repo.FindSecuritiesPaging(ctx, cp)
+	return s.repo.FindAssetsFromCheckpoint(ctx, checkpoint)
 }
 
-// AddPrice creates new price
-func (s *Service) AddPrice(ctx context.Context, e *entities.Price) error {
-	s.log.Info(ctx, "adding price", "ticker", e.Ticker)
-	return s.repo.InsertPrice(ctx, e)
+// AddAssetPrice creates new asset price
+func (s *Service) AddAssetPrice(ctx context.Context, assetPrice *entities.Price) error {
+	s.log.Info(ctx, "adding asset price", "ticker", assetPrice.Ticker)
+	return s.repo.InsertAssetPrice(ctx, assetPrice)
 }

@@ -19,12 +19,10 @@ type PriceModel struct {
 }
 
 // NewPriceModel create price model
-func NewPriceModel(e *entities.Price) (*PriceModel, error) {
-	var m = &PriceModel{}
-
-	m.Ticker = e.Ticker
-	m.Currency = e.Currency
-	m.Price = e.Price
-
-	return m, nil
+func NewPriceModel(assetPrice *entities.Price) (*PriceModel, error) {
+	return &PriceModel{
+		Ticker:   assetPrice.Ticker,
+		Currency: assetPrice.Currency,
+		Price:    assetPrice.Price,
+	}, nil
 }
