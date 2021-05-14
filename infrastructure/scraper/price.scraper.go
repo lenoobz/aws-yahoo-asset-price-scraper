@@ -26,10 +26,10 @@ type PriceScraper struct {
 
 // NewPriceScraper create new price scraper
 func NewPriceScraper(priceService *price.Service, log logger.ContextLog) *PriceScraper {
-	scraperJob := newScraperJob()
+	scrapePriceJob := newScraperJob()
 
 	return &PriceScraper{
-		ScrapePriceJob: scraperJob,
+		ScrapePriceJob: scrapePriceJob,
 		priceService:   priceService,
 		log:            log,
 	}
