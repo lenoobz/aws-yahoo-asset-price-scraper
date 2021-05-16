@@ -7,4 +7,4 @@ const (
 	SCRAPE_CHECKPOINT_COLLECTION = "scrape_checkpoint" // Should match with Colnames's key of AppConf
 )
 
-const PAGE_SIZE = 25
+const PAGE_SIZE = 50
