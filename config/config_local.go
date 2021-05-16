@@ -15,9 +15,9 @@ var AppConf = AppConfig{
 		Dbname:        "povi_local",
 		SchemaVersion: "1",
 		Colnames: map[string]string{
-			"assets":           "assets",
-			"asset_prices":     "asset_prices",
-			"price_checkpoint": "price_checkpoint",
+			"assets":            "assets",
+			"asset_prices":      "asset_prices",
+			"scrape_checkpoint": "scrape_checkpoint",
 		},
 	},
 }

@@ -239,7 +239,7 @@ func (r *PriceMongo) UpdateCheckpoint(ctx context.Context, pageSize int64, numAs
 	defer cancel()
 
 	// what collection we are going to use
-	colname, ok := r.conf.Colnames[consts.PRICE_CHECKPOINT_COLLECTION]
+	colname, ok := r.conf.Colnames[consts.SCRAPE_CHECKPOINT_COLLECTION]
 	if !ok {
 		r.log.Error(ctx, "cannot find collection name")
 		return nil, fmt.Errorf("cannot find collection name")
