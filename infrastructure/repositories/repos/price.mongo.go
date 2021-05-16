@@ -98,7 +98,7 @@ func (r *PriceMongo) CountAssets(ctx context.Context) (int64, error) {
 	defer cancel()
 
 	// what collection we are going to use
-	colname, ok := r.conf.Colnames[consts.ASSETS_COL]
+	colname, ok := r.conf.Colnames[consts.ASSETS_COLLECTION]
 	if !ok {
 		r.log.Error(ctx, "cannot find collection name")
 		return 0, fmt.Errorf("cannot find collection name")
@@ -121,7 +121,7 @@ func (r *PriceMongo) FindAllAssets(ctx context.Context) ([]*entities.Asset, erro
 	defer cancel()
 
 	// what collection we are going to use
-	colname, ok := r.conf.Colnames[consts.ASSETS_COL]
+	colname, ok := r.conf.Colnames[consts.ASSETS_COLLECTION]
 	if !ok {
 		r.log.Error(ctx, "cannot find collection name")
 		return nil, fmt.Errorf("cannot find collection name")
@@ -180,7 +180,7 @@ func (r *PriceMongo) FindAssetsFromCheckpoint(ctx context.Context, checkpoint *e
 	defer cancel()
 
 	// what collection we are going to use
-	colname, ok := r.conf.Colnames[consts.ASSETS_COL]
+	colname, ok := r.conf.Colnames[consts.ASSETS_COLLECTION]
 	if !ok {
 		r.log.Error(ctx, "cannot find collection name")
 		return nil, fmt.Errorf("cannot find collection name")
@@ -239,7 +239,7 @@ func (r *PriceMongo) UpdateCheckpoint(ctx context.Context, pageSize int64, numAs
 	defer cancel()
 
 	// what collection we are going to use
-	colname, ok := r.conf.Colnames[consts.CHECKPOINT_COL]
+	colname, ok := r.conf.Colnames[consts.PRICE_CHECKPOINT_COLLECTION]
 	if !ok {
 		r.log.Error(ctx, "cannot find collection name")
 		return nil, fmt.Errorf("cannot find collection name")
@@ -299,7 +299,7 @@ func (r *PriceMongo) InsertAssetPrice(ctx context.Context, assetPrice *entities.
 	}
 
 	// what collection we are going to use
-	colname, ok := r.conf.Colnames[consts.PRICES_COL]
+	colname, ok := r.conf.Colnames[consts.ASSET_PRICES_COLLECTION]
 	if !ok {
 		r.log.Error(ctx, "cannot find collection name")
 		return fmt.Errorf("cannot find collection name")
