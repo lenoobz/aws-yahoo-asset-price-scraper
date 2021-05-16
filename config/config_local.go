@@ -12,7 +12,7 @@ var AppConf = AppConfig{
 		Host:          "lenoobetfdevcluster.jd7wd.mongodb.net",
 		Username:      "lenoob_dev",
 		Password:      "lenoob_dev",
-		Dbname:        "etf_funds_local",
+		Dbname:        "povi_local",
 		SchemaVersion: "1",
 		Colnames: map[string]string{
 			"assets":           "assets",
