@@ -2,6 +2,12 @@
 
 package config
 
+import "os"
+
+var host = os.Getenv("MONGO_DB_HOST")
+var username = os.Getenv("MONGO_DB_PASSWORD")
+var password = os.Getenv("MONGO_DB_USERNAME")
+
 // AppConf constants
 var AppConf = AppConfig{
 	Mongo: MongoConfig{
@@ -9,9 +15,9 @@ var AppConf = AppConfig{
 		MinPoolSize:   5,
 		MaxPoolSize:   10,
 		MaxIdleTimeMS: 360000,
-		Host:          "lenoobetfdevcluster.jd7wd.mongodb.net",
-		Username:      "lenoob_dev",
-		Password:      "lenoob_dev",
+		Host:          host,
+		Username:      username,
+		Password:      password,
 		Dbname:        "povi_dev",
 		SchemaVersion: "1",
 		Colnames: map[string]string{
