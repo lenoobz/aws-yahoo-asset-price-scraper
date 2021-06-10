@@ -1,4 +1,4 @@
-// +build dev
+// +build staging
 
 package config
 

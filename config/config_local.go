@@ -9,10 +9,10 @@ var AppConf = AppConfig{
 		MinPoolSize:   5,
 		MaxPoolSize:   10,
 		MaxIdleTimeMS: 360000,
-		Host:          "lenoobetfdevcluster.jd7wd.mongodb.net",
+		Host:          "lenoobdev.l8ckp.mongodb.net",
 		Username:      "lenoob_dev",
 		Password:      "lenoob_dev",
-		Dbname:        "povi_local",
+		Dbname:        "povi",
 		SchemaVersion: "1",
 		Colnames: map[string]string{
 			"assets":            "assets",

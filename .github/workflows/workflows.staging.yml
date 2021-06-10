@@ -29,7 +29,7 @@ jobs:
       - name: Build
         env:
           GOPRIVATE: "github.com/hthl85"
-          LIBRARY_ENV: "dev"
+          LIBRARY_ENV: "staging"
         run: |
           git config --global url."https://${{ secrets.GO_MODULES_TOKEN }}:x-oauth-basic@github.com/hthl85".insteadOf "https://github.com/hthl85"
           make build
