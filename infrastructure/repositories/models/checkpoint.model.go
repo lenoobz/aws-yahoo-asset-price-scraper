@@ -1,14 +1,32 @@
 package models
 
-import "go.mongodb.org/mongo-driver/bson/primitive"
+import (
+	"context"
+	"time"
+
+	logger "github.com/hthl85/aws-lambda-logger"
+	"go.mongodb.org/mongo-driver/bson/primitive"
+)
 
 // CheckPointModel struct
 type CheckPointModel struct {
 	ID         *primitive.ObjectID `bson:"_id,omitempty"`
-	IsActive   bool                `bson:"isActive,omitempty"`
 	CreatedAt  int64               `bson:"createdAt,omitempty"`
 	ModifiedAt int64               `bson:"modifiedAt,omitempty"`
+	Enabled    bool                `bson:"enabled"`
+	Deleted    bool                `bson:"deleted"`
 	Schema     string              `bson:"schema,omitempty"`
 	PageSize   int64               `bson:"size,omitempty"`
 	PrevIndex  int64               `bson:"prevIndex"`
+}
+
+// NewCheckPointModel create checkpoint model
+func NewCheckPointModel(ctx context.Context, log logger.ContextLog, pageSize int64, schemaVersion string) (*CheckPointModel, error) {
+	return &CheckPointModel{
+		ModifiedAt: time.Now().UTC().Unix(),
+		Enabled:    true,
+		Deleted:    false,
+		Schema:     schemaVersion,
+		PageSize:   pageSize,
+	}, nil
 }

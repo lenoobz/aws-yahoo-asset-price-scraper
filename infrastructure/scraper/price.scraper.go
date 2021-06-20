@@ -11,25 +11,28 @@ import (
 	"github.com/google/uuid"
 	corid "github.com/hthl85/aws-lambda-corid"
 	logger "github.com/hthl85/aws-lambda-logger"
-	"github.com/hthl85/aws-yahoo-price-scraper/config"
-	"github.com/hthl85/aws-yahoo-price-scraper/entities"
-	"github.com/hthl85/aws-yahoo-price-scraper/usecase/price"
+	"github.com/hthl85/aws-yahoo-asset-price-scraper/config"
+	"github.com/hthl85/aws-yahoo-asset-price-scraper/entities"
+	"github.com/hthl85/aws-yahoo-asset-price-scraper/usecase/assets"
+	"github.com/hthl85/aws-yahoo-asset-price-scraper/usecase/price"
 )
 
 // PriceScraper struct
 type PriceScraper struct {
 	ScrapePriceJob *colly.Collector
 	priceService   *price.Service
+	assetService   *assets.Service
 	log            logger.ContextLog
 	errorTickers   []string
 }
 
-// NewPriceScraper create new price scraper
-func NewPriceScraper(priceService *price.Service, log logger.ContextLog) *PriceScraper {
+// NewAssetPriceScraper create new price scraper
+func NewAssetPriceScraper(assetService *assets.Service, priceService *price.Service, log logger.ContextLog) *PriceScraper {
 	scrapePriceJob := newScraperJob()
 
 	return &PriceScraper{
 		ScrapePriceJob: scrapePriceJob,
+		assetService:   assetService,
 		priceService:   priceService,
 		log:            log,
 	}
@@ -72,7 +75,7 @@ func (s *PriceScraper) ScrapeAllAssetsPrice() {
 
 	s.configJobs()
 
-	assets, err := s.priceService.GetAllAssets(ctx)
+	assets, err := s.assetService.GetAllAssets(ctx)
 	if err != nil {
 		s.log.Error(ctx, "get assets list failed", "error", err)
 	}
@@ -99,7 +102,7 @@ func (s *PriceScraper) ScrapeAssetsPriceFromCheckpoint(pageSize int64) {
 
 	s.configJobs()
 
-	assets, err := s.priceService.GetAssetsFromCheckpoint(ctx, pageSize)
+	assets, err := s.assetService.GetAssetsFromCheckpoint(ctx, pageSize)
 	if err != nil {
 		s.log.Error(ctx, "get assets list failed", "error", err)
 	}
@@ -151,7 +154,7 @@ func (s *PriceScraper) processPriceResponse(e *colly.HTMLElement) {
 
 	foundPrice := false
 
-	assetPrice := entities.Price{
+	assetPrice := entities.AssetPrice{
 		Ticker:   ticker,
 		Currency: currency,
 	}

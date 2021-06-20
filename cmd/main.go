@@ -4,11 +4,13 @@ import (
 	"log"
 
 	logger "github.com/hthl85/aws-lambda-logger"
-	"github.com/hthl85/aws-yahoo-price-scraper/config"
-	"github.com/hthl85/aws-yahoo-price-scraper/consts"
-	"github.com/hthl85/aws-yahoo-price-scraper/infrastructure/repositories/repos"
-	"github.com/hthl85/aws-yahoo-price-scraper/infrastructure/scraper"
-	"github.com/hthl85/aws-yahoo-price-scraper/usecase/price"
+	"github.com/hthl85/aws-yahoo-asset-price-scraper/config"
+	"github.com/hthl85/aws-yahoo-asset-price-scraper/consts"
+	"github.com/hthl85/aws-yahoo-asset-price-scraper/infrastructure/repositories/repos"
+	"github.com/hthl85/aws-yahoo-asset-price-scraper/infrastructure/scraper"
+	"github.com/hthl85/aws-yahoo-asset-price-scraper/usecase/assets"
+	"github.com/hthl85/aws-yahoo-asset-price-scraper/usecase/checkpoint"
+	"github.com/hthl85/aws-yahoo-asset-price-scraper/usecase/price"
 )
 
 func main() {
@@ -22,17 +24,32 @@ func main() {
 	defer zap.Close()
 
 	// create new repository
-	repo, err := repos.NewPriceMongo(nil, zap, &appConf.Mongo)
+	priceRepo, err := repos.NewAssetPriceMongo(nil, zap, &appConf.Mongo)
 	if err != nil {
-		log.Fatal("create price mongo repo failed")
+		log.Fatal("create asset price mongo failed")
 	}
-	defer repo.Close()
+	defer priceRepo.Close()
+
+	// create new repository
+	assetRepo, err := repos.NewAssetMongo(nil, zap, &appConf.Mongo)
+	if err != nil {
+		log.Fatal("create asset mongo failed")
+	}
+	defer assetRepo.Close()
+
+	// create new repository
+	checkpointRepo, err := repos.NewCheckpointMongo(nil, zap, &appConf.Mongo)
+	if err != nil {
+		log.Fatal("create checkpoint mongo failed")
+	}
+	defer checkpointRepo.Close()
 
 	// create new services
-	ps := price.NewService(repo, zap)
+	checkpointService := checkpoint.NewService(checkpointRepo, zap)
+	assetService := assets.NewService(assetRepo, *checkpointService, zap)
+	priceService := price.NewService(priceRepo, zap)
 
-	ts := scraper.NewPriceScraper(ps, zap)
-	// ts.ScrapeAllAssetsPrice()
-	ts.ScrapeAssetsPriceFromCheckpoint(consts.PAGE_SIZE)
-	defer ts.Close()
+	job := scraper.NewAssetPriceScraper(assetService, priceService, zap)
+	job.ScrapeAssetsPriceFromCheckpoint(consts.PAGE_SIZE)
+	defer job.Close()
 }

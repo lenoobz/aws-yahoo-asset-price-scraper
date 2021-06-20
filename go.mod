@@ -1,4 +1,4 @@
-module github.com/hthl85/aws-yahoo-price-scraper
+module github.com/hthl85/aws-yahoo-asset-price-scraper
 
 go 1.16
 

@@ -1,18 +1,27 @@
 package main
 
 import (
+	"context"
 	"log"
 
 	"github.com/aws/aws-lambda-go/lambda"
 	logger "github.com/hthl85/aws-lambda-logger"
-	"github.com/hthl85/aws-yahoo-price-scraper/config"
-	"github.com/hthl85/aws-yahoo-price-scraper/consts"
-	"github.com/hthl85/aws-yahoo-price-scraper/infrastructure/repositories/repos"
-	"github.com/hthl85/aws-yahoo-price-scraper/infrastructure/scraper"
-	"github.com/hthl85/aws-yahoo-price-scraper/usecase/price"
+	"github.com/hthl85/aws-yahoo-asset-price-scraper/config"
+	"github.com/hthl85/aws-yahoo-asset-price-scraper/consts"
+	"github.com/hthl85/aws-yahoo-asset-price-scraper/infrastructure/repositories/repos"
+	"github.com/hthl85/aws-yahoo-asset-price-scraper/infrastructure/scraper"
+	"github.com/hthl85/aws-yahoo-asset-price-scraper/usecase/assets"
+	"github.com/hthl85/aws-yahoo-asset-price-scraper/usecase/checkpoint"
+	"github.com/hthl85/aws-yahoo-asset-price-scraper/usecase/price"
 )
 
 func main() {
+	lambda.Start(lambdaHandler)
+}
+
+func lambdaHandler(ctx context.Context) {
+	log.Println("lambda handler is called")
+
 	appConf := config.AppConf
 
 	// create new logger
@@ -23,23 +32,33 @@ func main() {
 	defer zap.Close()
 
 	// create new repository
-	repo, err := repos.NewPriceMongo(nil, zap, &appConf.Mongo)
+	priceRepo, err := repos.NewAssetPriceMongo(nil, zap, &appConf.Mongo)
 	if err != nil {
-		log.Fatal("create stock mongo repo failed")
+		log.Fatal("create asset price mongo failed")
 	}
-	defer repo.Close()
+	defer priceRepo.Close()
 
-	// create new service
-	fs := price.NewService(repo, zap)
+	// create new repository
+	assetRepo, err := repos.NewAssetMongo(nil, zap, &appConf.Mongo)
+	if err != nil {
+		log.Fatal("create asset mongo failed")
+	}
+	defer assetRepo.Close()
+
+	// create new repository
+	checkpointRepo, err := repos.NewCheckpointMongo(nil, zap, &appConf.Mongo)
+	if err != nil {
+		log.Fatal("create checkpoint mongo failed")
+	}
+	defer checkpointRepo.Close()
+
+	// create new services
+	checkpointService := checkpoint.NewService(checkpointRepo, zap)
+	assetService := assets.NewService(assetRepo, *checkpointService, zap)
+	priceService := price.NewService(priceRepo, zap)
 
 	// create new scraper jobs
-	jobs := scraper.NewPriceScraper(fs, zap)
-	jobs.ScrapeAssetsPriceFromCheckpoint(consts.PAGE_SIZE)
-	defer jobs.Close()
-
-	lambda.Start(lambdaHandler)
-}
-
-func lambdaHandler() {
-	log.Println("lambda handler is called")
+	job := scraper.NewAssetPriceScraper(assetService, priceService, zap)
+	job.ScrapeAssetsPriceFromCheckpoint(consts.PAGE_SIZE)
+	defer job.Close()
 }
