@@ -14,8 +14,8 @@ type AssetPriceModel struct {
 	ID         *primitive.ObjectID `bson:"_id,omitempty"`
 	CreatedAt  int64               `bson:"createdAt,omitempty"`
 	ModifiedAt int64               `bson:"modifiedAt,omitempty"`
-	Enabled    bool                `bson:"enabled,omitempty"`
-	Deleted    bool                `bson:"deleted,omitempty"`
+	Enabled    bool                `bson:"enabled"`
+	Deleted    bool                `bson:"deleted"`
 	Schema     string              `bson:"schema,omitempty"`
 	Source     string              `bson:"source,omitempty"`
 	Ticker     string              `bson:"ticker,omitempty"`
