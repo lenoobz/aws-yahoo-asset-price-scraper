@@ -14,19 +14,20 @@ require (
 	github.com/gocolly/colly v1.2.0
 	github.com/golang/groupcache v0.0.0-20210331224755-41bb18bfe9da // indirect
 	github.com/golang/protobuf v1.5.2 // indirect
-	github.com/google/uuid v1.2.0
-	github.com/lenoobz/aws-lambda-corid v0.0.0-20210303072659-7fd2001b40b7
-	github.com/lenoobz/aws-lambda-logger v0.0.0-20210304034759-41e8c020b8a8
+	github.com/google/uuid v1.3.0
 	github.com/kennygrant/sanitize v1.2.4 // indirect
 	github.com/klauspost/compress v1.12.2 // indirect
+	github.com/lenoobz/aws-lambda-corid v0.0.0-20210726202238-53751e0ade36
+	github.com/lenoobz/aws-lambda-logger v0.0.0-20210726205244-4eae893f1aa9
 	github.com/saintfish/chardet v0.0.0-20120816061221-3af4cd4741ca // indirect
-	github.com/stretchr/testify v1.7.0 // indirect
 	github.com/temoto/robotstxt v1.1.2 // indirect
 	github.com/youmark/pkcs8 v0.0.0-20201027041543-1326539a0a0a // indirect
 	go.mongodb.org/mongo-driver v1.5.2
+	go.uber.org/atomic v1.9.0 // indirect
+	go.uber.org/multierr v1.7.0 // indirect
+	go.uber.org/zap v1.18.1 // indirect
 	golang.org/x/crypto v0.0.0-20210506145944-38f3c27a63bf // indirect
 	golang.org/x/net v0.0.0-20210508051633-16afe75a6701 // indirect
 	golang.org/x/sync v0.0.0-20210220032951-036812b2e83c // indirect
 	google.golang.org/appengine v1.6.7 // indirect
-	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b // indirect
 )
