@@ -1,4 +1,4 @@
-module github.com/hthl85/aws-yahoo-asset-price-scraper
+module github.com/lenoobz/aws-yahoo-asset-price-scraper
 
 go 1.16
 
@@ -15,8 +15,8 @@ require (
 	github.com/golang/groupcache v0.0.0-20210331224755-41bb18bfe9da // indirect
 	github.com/golang/protobuf v1.5.2 // indirect
 	github.com/google/uuid v1.2.0
-	github.com/hthl85/aws-lambda-corid v0.0.0-20210303072659-7fd2001b40b7
-	github.com/hthl85/aws-lambda-logger v0.0.0-20210304034759-41e8c020b8a8
+	github.com/lenoobz/aws-lambda-corid v0.0.0-20210303072659-7fd2001b40b7
+	github.com/lenoobz/aws-lambda-logger v0.0.0-20210304034759-41e8c020b8a8
 	github.com/kennygrant/sanitize v1.2.4 // indirect
 	github.com/klauspost/compress v1.12.2 // indirect
 	github.com/saintfish/chardet v0.0.0-20120816061221-3af4cd4741ca // indirect

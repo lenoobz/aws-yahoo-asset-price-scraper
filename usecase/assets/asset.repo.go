@@ -3,7 +3,7 @@ package assets
 import (
 	"context"
 
-	"github.com/hthl85/aws-yahoo-asset-price-scraper/entities"
+	"github.com/lenoobz/aws-yahoo-asset-price-scraper/entities"
 )
 
 ///////////////////////////////////////////////////////////

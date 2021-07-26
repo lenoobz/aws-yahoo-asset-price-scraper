@@ -4,8 +4,8 @@ import (
 	"context"
 	"time"
 
-	logger "github.com/hthl85/aws-lambda-logger"
-	"github.com/hthl85/aws-yahoo-asset-price-scraper/entities"
+	logger "github.com/lenoobz/aws-lambda-logger"
+	"github.com/lenoobz/aws-yahoo-asset-price-scraper/entities"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 

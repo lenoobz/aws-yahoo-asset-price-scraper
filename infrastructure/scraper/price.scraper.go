@@ -9,12 +9,12 @@ import (
 	"github.com/gocolly/colly"
 	"github.com/gocolly/colly/extensions"
 	"github.com/google/uuid"
-	corid "github.com/hthl85/aws-lambda-corid"
-	logger "github.com/hthl85/aws-lambda-logger"
-	"github.com/hthl85/aws-yahoo-asset-price-scraper/config"
-	"github.com/hthl85/aws-yahoo-asset-price-scraper/entities"
-	"github.com/hthl85/aws-yahoo-asset-price-scraper/usecase/assets"
-	"github.com/hthl85/aws-yahoo-asset-price-scraper/usecase/price"
+	corid "github.com/lenoobz/aws-lambda-corid"
+	logger "github.com/lenoobz/aws-lambda-logger"
+	"github.com/lenoobz/aws-yahoo-asset-price-scraper/config"
+	"github.com/lenoobz/aws-yahoo-asset-price-scraper/entities"
+	"github.com/lenoobz/aws-yahoo-asset-price-scraper/usecase/assets"
+	"github.com/lenoobz/aws-yahoo-asset-price-scraper/usecase/price"
 )
 
 // PriceScraper struct

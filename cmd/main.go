@@ -3,14 +3,14 @@ package main
 import (
 	"log"
 
-	logger "github.com/hthl85/aws-lambda-logger"
-	"github.com/hthl85/aws-yahoo-asset-price-scraper/config"
-	"github.com/hthl85/aws-yahoo-asset-price-scraper/consts"
-	"github.com/hthl85/aws-yahoo-asset-price-scraper/infrastructure/repositories/repos"
-	"github.com/hthl85/aws-yahoo-asset-price-scraper/infrastructure/scraper"
-	"github.com/hthl85/aws-yahoo-asset-price-scraper/usecase/assets"
-	"github.com/hthl85/aws-yahoo-asset-price-scraper/usecase/checkpoint"
-	"github.com/hthl85/aws-yahoo-asset-price-scraper/usecase/price"
+	logger "github.com/lenoobz/aws-lambda-logger"
+	"github.com/lenoobz/aws-yahoo-asset-price-scraper/config"
+	"github.com/lenoobz/aws-yahoo-asset-price-scraper/consts"
+	"github.com/lenoobz/aws-yahoo-asset-price-scraper/infrastructure/repositories/repos"
+	"github.com/lenoobz/aws-yahoo-asset-price-scraper/infrastructure/scraper"
+	"github.com/lenoobz/aws-yahoo-asset-price-scraper/usecase/assets"
+	"github.com/lenoobz/aws-yahoo-asset-price-scraper/usecase/checkpoint"
+	"github.com/lenoobz/aws-yahoo-asset-price-scraper/usecase/price"
 )
 
 func main() {

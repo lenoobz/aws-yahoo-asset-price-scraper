@@ -3,9 +3,9 @@ package assets
 import (
 	"context"
 
-	logger "github.com/hthl85/aws-lambda-logger"
-	"github.com/hthl85/aws-yahoo-asset-price-scraper/entities"
-	"github.com/hthl85/aws-yahoo-asset-price-scraper/usecase/checkpoint"
+	logger "github.com/lenoobz/aws-lambda-logger"
+	"github.com/lenoobz/aws-yahoo-asset-price-scraper/entities"
+	"github.com/lenoobz/aws-yahoo-asset-price-scraper/usecase/checkpoint"
 )
 
 // Service sector

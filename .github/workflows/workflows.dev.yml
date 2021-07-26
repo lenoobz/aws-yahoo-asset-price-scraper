@@ -28,10 +28,10 @@ jobs:
       # Runs a single command using the runners shell
       - name: Build
         env:
-          GOPRIVATE: "github.com/hthl85"
+          GOPRIVATE: "github.com/lenoobz"
           LIBRARY_ENV: "dev"
         run: |
-          git config --global url."https://${{ secrets.GO_MODULES_TOKEN }}:x-oauth-basic@github.com/hthl85".insteadOf "https://github.com/hthl85"
+          git config --global url."https://${{ secrets.GO_MODULES_TOKEN }}:x-oauth-basic@github.com/lenoobz".insteadOf "https://github.com/lenoobz"
           make build
 
       # Runs a set of commands using the runners shell

@@ -4,7 +4,7 @@ import (
 	"context"
 	"time"
 
-	logger "github.com/hthl85/aws-lambda-logger"
+	logger "github.com/lenoobz/aws-lambda-logger"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
