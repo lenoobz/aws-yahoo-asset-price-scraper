@@ -161,7 +161,7 @@ func (s *PriceScraper) processPriceResponse(e *colly.HTMLElement) {
 
 	e.ForEach("span", func(_ int, span *colly.HTMLElement) {
 		txt := span.Attr("data-reactid")
-		if strings.EqualFold(txt, "32") {
+		if strings.EqualFold(txt, "31") {
 			p := span.DOM.Text()
 			val, err := strconv.ParseFloat(p, 64)
 			if err != nil {

@@ -145,6 +145,8 @@ func (r *CheckpointMongo) UpdateCheckpoint(ctx context.Context, pageSize int64, 
 		checkpoint.PrevIndex = checkpoint.PrevIndex + 1
 	}
 
+	checkpoint.PageSize = pageSize
+
 	return r.updateCheckPoint(ctx, col, &checkpoint)
 }
 
