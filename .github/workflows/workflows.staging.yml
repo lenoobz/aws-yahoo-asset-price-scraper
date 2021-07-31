@@ -1,6 +1,6 @@
 # This is a basic workflow to help you get started with Actions
 
-name: Scrape Yahoo Price
+name: Staging - Scrape Yahoo Price
 
 # Controls when the action will run.
 on:

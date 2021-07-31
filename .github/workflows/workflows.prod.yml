@@ -1,6 +1,6 @@
 # This is a basic workflow to help you get started with Actions
 
-name: Scrape Yahoo Price
+name: Prod - Scrape Yahoo Price
 
 # Controls when the action will run.
 on:
@@ -47,7 +47,7 @@ jobs:
           aws-region: ${{ secrets.PROD_AWS_REGION }}
 
       - name: Upload to s3 bucket
-        run: aws s3 cp ./main.zip s3://tf-fund-lambdas-storage/${{ secrets.FUNCTION_NAME }}.zip
+        run: aws s3 cp ./main.zip s3://tf-fund-lambdas-storage/fin-${{ secrets.FUNCTION_NAME }}.zip
 
       - name: Update lamdba function
-        run: aws lambda update-function-code --function-name ${{ secrets.FUNCTION_NAME }} --zip-file fileb://main.zip
+        run: aws lambda update-function-code --function-name fin-${{ secrets.FUNCTION_NAME }} --zip-file fileb://main.zip
