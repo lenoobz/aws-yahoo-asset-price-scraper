@@ -139,13 +139,22 @@ func (r *CheckpointMongo) UpdateCheckpoint(ctx context.Context, pageSize int64, 
 		return nil, err
 	}
 
-	if checkpoint.PrevIndex*checkpoint.PageSize+checkpoint.PageSize >= numAssets {
-		checkpoint.PrevIndex = 0
-	} else {
-		checkpoint.PrevIndex = checkpoint.PrevIndex + 1
+	if checkpoint.PriceCheckPoint == nil {
+		checkpoint.PriceCheckPoint = &models.PriceCheckPointModel{
+			PageSize:  pageSize,
+			PrevIndex: 0,
+		}
+		return r.updateCheckPoint(ctx, col, &checkpoint)
 	}
 
-	checkpoint.PageSize = pageSize
+	currNumAssets := checkpoint.PriceCheckPoint.PrevIndex*checkpoint.PriceCheckPoint.PageSize + checkpoint.PriceCheckPoint.PageSize
+	if currNumAssets >= numAssets {
+		checkpoint.PriceCheckPoint.PrevIndex = 0
+	} else {
+		checkpoint.PriceCheckPoint.PrevIndex = checkpoint.PriceCheckPoint.PrevIndex + 1
+	}
+
+	checkpoint.PriceCheckPoint.PageSize = pageSize
 
 	return r.updateCheckPoint(ctx, col, &checkpoint)
 }
@@ -177,7 +186,7 @@ func (r *CheckpointMongo) updateCheckPoint(ctx context.Context, col *mongo.Colle
 	}
 
 	return &entities.Checkpoint{
-		PageSize:  checkpoint.PageSize,
-		PageIndex: checkpoint.PrevIndex,
+		PageSize:  checkpoint.PriceCheckPoint.PageSize,
+		PageIndex: checkpoint.PriceCheckPoint.PrevIndex,
 	}, nil
 }

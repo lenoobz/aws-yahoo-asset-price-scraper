@@ -10,14 +10,18 @@ import (
 
 // CheckPointModel struct
 type CheckPointModel struct {
-	ID         *primitive.ObjectID `bson:"_id,omitempty"`
-	CreatedAt  int64               `bson:"createdAt,omitempty"`
-	ModifiedAt int64               `bson:"modifiedAt,omitempty"`
-	Enabled    bool                `bson:"enabled"`
-	Deleted    bool                `bson:"deleted"`
-	Schema     string              `bson:"schema,omitempty"`
-	PageSize   int64               `bson:"size,omitempty"`
-	PrevIndex  int64               `bson:"prevIndex"`
+	ID              *primitive.ObjectID   `bson:"_id,omitempty"`
+	CreatedAt       int64                 `bson:"createdAt,omitempty"`
+	ModifiedAt      int64                 `bson:"modifiedAt,omitempty"`
+	Enabled         bool                  `bson:"enabled"`
+	Deleted         bool                  `bson:"deleted"`
+	Schema          string                `bson:"schema,omitempty"`
+	PriceCheckPoint *PriceCheckPointModel `bson:"priceCheckPoint,omitempty"`
+}
+
+type PriceCheckPointModel struct {
+	PageSize  int64 `bson:"size,omitempty"`
+	PrevIndex int64 `bson:"prevIndex"`
 }
 
 // NewCheckPointModel create checkpoint model
@@ -27,6 +31,8 @@ func NewCheckPointModel(ctx context.Context, log logger.ContextLog, pageSize int
 		Enabled:    true,
 		Deleted:    false,
 		Schema:     schemaVersion,
-		PageSize:   pageSize,
+		PriceCheckPoint: &PriceCheckPointModel{
+			PageSize: pageSize,
+		},
 	}, nil
 }

@@ -69,8 +69,8 @@ func (s *PriceScraper) configJobs() {
 	s.ScrapePriceJob.OnHTML("div[id=quote-header-info]", s.processPriceResponse)
 }
 
-// ScrapeAllAssetsPrice scrape all assets price
-func (s *PriceScraper) ScrapeAllAssetsPrice() {
+// ScrapeAllAssetPrices scrape all assets price
+func (s *PriceScraper) ScrapeAllAssetPrices() {
 	ctx := context.Background()
 
 	s.configJobs()
@@ -96,8 +96,8 @@ func (s *PriceScraper) ScrapeAllAssetsPrice() {
 	s.ScrapePriceJob.Wait()
 }
 
-// ScrapeAssetsPriceFromCheckpoint scrape all assets price from checkpoint
-func (s *PriceScraper) ScrapeAssetsPriceFromCheckpoint(pageSize int64) {
+// ScrapeAssetPricesFromCheckpoint scrape all assets price from checkpoint
+func (s *PriceScraper) ScrapeAssetPricesFromCheckpoint(pageSize int64) {
 	ctx := context.Background()
 
 	s.configJobs()
@@ -162,7 +162,8 @@ func (s *PriceScraper) processPriceResponse(e *colly.HTMLElement) {
 	e.ForEach("span", func(_ int, span *colly.HTMLElement) {
 		txt := span.Attr("data-reactid")
 		if strings.EqualFold(txt, "31") {
-			p := span.DOM.Text()
+			p := strings.Replace(span.DOM.Text(), ",", "", -1)
+
 			val, err := strconv.ParseFloat(p, 64)
 			if err != nil {
 				s.log.Error(ctx, "parse price failed", "error", err, "ticker", ticker, "raw-value", txt)
